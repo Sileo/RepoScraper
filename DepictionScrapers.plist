@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BigBoss</key>
+	<array>
+		<dict>
+			<key>host</key>
+			<string>moreinfo.thebigboss.org</string>
+		</dict>
+	</array>
+	<key>MacCiti</key>
+	<array>
+		<dict>
+			<key>host</key>
+			<string>cydia.saurik.com</string>
+			<key>prefix</key>
+			<string>/macciti</string>
+		</dict>
+	</array>
+</dict>
+</plist>
