@@ -129,7 +129,6 @@ var parseMain = function(){
 					let cleanedHTML = cleanHTML(el.html());
 					let markdown = SileoGen.generateMarkdown(cleanedHTML);
 					markdown.useRawFormat = true;
-					print("HTML: " + cleanedHTML);
 					stackView.views.push(markdown);
 
 					let commonSize = SileoGen.mostCommonSize;
