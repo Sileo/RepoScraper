@@ -66,9 +66,21 @@ var parseMain = function(){
 		fieldsets.forEach(function(fieldset, idx){
 			let tables = fieldset.getElementsWithTag("table");
 
+			var skip = false;
+
 			let elements = fieldset.children();
-			elements.forEach(function(el, idx){
-				if (el.tag() == "div" && tables.length == 0) {
+			elements.forEach(function(el, i){
+				if (skip){
+					skip = false;
+					return;
+				}
+
+				if (el.tag() == "label" && el.text() == "What's New"){
+					let list = cleanHTML(elements[i+1].html()).replace(/\n\n/g, '');
+					changelogStackView.views.push(SileoGen.generateMarkdown(list));
+
+					skip = true;
+				} else if (el.tag() == "div" && tables.length == 0) {
 					let autoStackView = SileoGen.generateAutostackView(10);
 					let screenshotsArr = new Array();
 					let lastSize = {width: NaN, height: NaN, cornerRadius: 0};
@@ -154,7 +166,6 @@ var parseMain = function(){
 
 		stackView.views.push(SileoGen.generateSeparator());
 	});
-	//SileoGen.trimSeparator(detailsStackView.views);
 
 	let origButton = SileoGen.generateTableButton("Original Depiction", ".");
 	detailsStackView.views.push(origButton);
@@ -163,7 +174,9 @@ var parseMain = function(){
 	disclaimer.useRawFormat = true;
 	detailsStackView.views.push(disclaimer);
 	
-	changelogStackView.views.push(SileoGen.generateMarkdown("Changelogs are not available for this package."));
+	if (changelogStackView.views.length == 0){
+		changelogStackView.views.push(SileoGen.generateMarkdown("Changelogs are not available for this package."));
+	}
 
 	let rootView = {
 		"class": "DepictionTabView",
