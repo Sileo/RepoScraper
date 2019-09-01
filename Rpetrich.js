@@ -13,23 +13,23 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 */
 
 (function() {
-	let panels = body.getElementsWithTag("panel");
+	const panels = body.getElementsWithTag("panel");
 
-	let detailsStackView = SileoGen.generateStackView();
+	const detailsStackView = SileoGen.generateStackView();
 	detailsStackView.tabname = "Description"
 
-	let changelogStackView = SileoGen.generateStackView();
+	const changelogStackView = SileoGen.generateStackView();
 	changelogStackView.tabname = "Changelog"
 
 	// in *most*/all of the packages, the first fieldset is styled, "others" (changelogs, etc.) are not.
-	let desc = panels.map(panel =>
+	const desc = panels.map(panel =>
 		panel.getElementsWithTag("fieldset").map(h =>
 			h.attr('style') ? h.html() : null
 		).filter(Boolean).join('\n')
 	);
 
 	// in *most*/all of the packages, the first fieldset is styled, "others" (changelogs, etc.) are not.
-	let changes = panels.map(panel =>
+	const changes = panels.map(panel =>
 		panel.getElementsWithTag("fieldset").map(h => {
 			if(h.attr('style')) return;
 			return h.children().map(c => c.tag() !== 'a' ? c.html() : null);
@@ -43,7 +43,17 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 
 	detailsStackView.views.push(SileoGen.generateMarkdown("<span>This depiction has been automatically generated. It may be missing information.</span>"));
 
-	let rootView = {
+	// Images
+	const screenshots = SileoGen.generateScreenshots(160, 284, 8);
+	const images = body.getElementsWithTag('img');
+	images.map(img => {
+		if(!img.attr('src')) return; // to be safe
+		screenshots.screenshots.push(SileoGen.generateScreenshot(img.attr('src'), img.attr('alt') || 'Love Khafra'));
+	}).filter(Boolean);
+
+	detailsStackView.views.push(screenshots);
+
+	const rootView = {
 		"class": "DepictionTabView",
 		"minVersion": "0.7",
 		"tabs": [ 
