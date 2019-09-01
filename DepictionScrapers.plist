@@ -18,13 +18,13 @@
 			<string>/macciti</string>
 		</dict>
 	</array>
-	<key>Rpetrich</key>
+	<key>rpetrich</key>
 	<array>
 		<dict>
 			<key>host</key>
 			<string>rpetri.ch</string>
 			<key>prefix</key>
-			<string>/repo/</string>
+			<string>/cydia</string>
 		</dict>
 	</array>
 </dict>
