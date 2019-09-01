@@ -13,16 +13,16 @@
  THIS SOFTWARE IS PROVIDED BY COOLSTAR "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var parseTag = function(el, type){
+var parseTag = function(el) {
 	let tag = el.tag();
-	if (tag == "label"){
+	if (tag === "label"){
 		if (el.text().includes("Description")){
 			return null;
 		}
 
 		let labelText = SileoGen.generateHeader(el.text());
 		return labelText;
-	} else if (tag == "table"){
+	} else if (tag === "table"){
 		let stackView = SileoGen.generateStackView();
 
 		let rows = el.getElementsWithTag("tr");
@@ -65,22 +65,19 @@ var parseMain = function(){
 		let fieldsets = panel.getElementsWithTag("fieldset");
 		fieldsets.forEach(function(fieldset, idx){
 			let tables = fieldset.getElementsWithTag("table");
-
-			var skip = false;
-
 			let elements = fieldset.children();
-			elements.forEach(function(el, i){
-				if (skip){
-					skip = false;
-					return;
-				}
-
-				if (el.tag() == "label" && el.text() == "What's New"){
+			elements.forEach(function(el, i) {
+				// Changelogs
+				if(el.tag() === 'label' && el.text() === 'What\'s New') {
 					let list = cleanHTML(elements[i+1].html()).replace(/\n\n/g, '');
-					changelogStackView.views.push(SileoGen.generateMarkdown(list));
 
-					skip = true;
-				} else if (el.tag() == "div" && tables.length == 0) {
+					changelogStackView.views.push(SileoGen.generateMarkdown(list));
+ 				} else if (el.tag() == "div" && tables.length == 0) {
+					let isLabelForChangeLog = elements[i-1].tag() === 'label' && elements[i-1].text() === 'What\'s New';
+					if(isLabelForChangeLog) {
+						return null;
+					}
+					
 					let autoStackView = SileoGen.generateAutostackView(10);
 					let screenshotsArr = new Array();
 					let lastSize = {width: NaN, height: NaN, cornerRadius: 0};
@@ -132,6 +129,7 @@ var parseMain = function(){
 					let cleanedHTML = cleanHTML(el.html());
 					let markdown = SileoGen.generateMarkdown(cleanedHTML);
 					markdown.useRawFormat = true;
+					print("HTML: " + cleanedHTML);
 					stackView.views.push(markdown);
 
 					let commonSize = SileoGen.mostCommonSize;
@@ -167,22 +165,26 @@ var parseMain = function(){
 		stackView.views.push(SileoGen.generateSeparator());
 	});
 
-	let origButton = SileoGen.generateTableButton("Original Depiction", ".");
+	if(changelogStackView.views.length === 0) {
+		changelogStackView.views.push(SileoGen.generateMarkdown('No changelogs are available for this package!')); 
+	}
+
+	let origButton = SileoGen.generateTableButton("View Original Depiction", ".");
 	detailsStackView.views.push(origButton);
 
-	let disclaimer = SileoGen.generateMarkdown("<span style='font-size: 12pt;color: #666666;text-align: center;'>This depiction has been automatically generated. It may be missing information.</span>");
+	let disclaimer = SileoGen.generateMarkdown("<span>This depiction has been automatically generated. It may be missing information.</span>");
 	disclaimer.useRawFormat = true;
 	detailsStackView.views.push(disclaimer);
-	
-	if (changelogStackView.views.length == 0){
-		changelogStackView.views.push(SileoGen.generateMarkdown("Changelogs are not available for this package."));
-	}
 
 	let rootView = {
 		"class": "DepictionTabView",
 		"minVersion": "0.7",
-		"tabs": [detailsStackView, changelogStackView]
-	};
+		"tabs": [ 
+            detailsStackView, 
+            changelogStackView
+        ]
+    };
+    
 	return JSON.stringify(rootView);
 }
 parseMain();
