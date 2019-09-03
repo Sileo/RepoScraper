@@ -1,169 +1,75 @@
-let parseTag = function(el) {
-	let tag = el.tag();
-	if (tag === "label"){
-		if (el.text().includes("Description")){
-			return null;
-		}
+/*
+Copyright 2019 Khafra
 
-		let labelText = SileoGen.generateHeader(el.text());
-		return labelText;
-	} else if (tag === "table"){
-		let stackView = SileoGen.generateStackView();
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
+to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-		let rows = el.getElementsWithTag("tr");
-		rows.forEach(function(row) {
-			let key = row.getElementsWithClassName("key")[0];
-			let detail = row.getElementsWithClassName("detail")[0];
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-			if (key === null || detail === null){
-				return;
-			}
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
-			if (key.tag() !== "td" || detail.tag() !== "td"){
-				return;
-			}
+(function() {
+	const detailsStackView = SileoGen.generateStackView();
+	detailsStackView.tabname = "Description"
 
-			let tableCell = SileoGen.generateTableText(key.text(), detail.text());
-			stackView.views.push(tableCell);
-		});
-		return stackView;
-	} else if (tag === "a" && el.className() === "button"){
-		let href = el.attr("href");
-		let button = SileoGen.generateTableButton(el.text(), href);
-		return button;
-	}
-	return null;
-};
+	const changelogStackView = SileoGen.generateStackView();
+    changelogStackView.tabname = "Changelog"
 
-(function(){
-	let panels = body.getElementsWithTag("panel");
+    // description
+    body.getElementsWithTag('fieldset') // <fieldset id="description">...</fieldset>
+        .filter(h => Boolean && h.attr('id') === 'description')
+        .map(dtxt => dtxt.children()[1].html().replace(/\s+/g).length
+            ? detailsStackView.views.push(SileoGen.generateMarkdown(cleanHTML(dtxt.children()[1].html().trim())))
+            : null
+        );
 
-	let detailsStackView = SileoGen.generateStackView();
-	detailsStackView.tabname = "Details"
+    // changes
+    body.getElementsWithTag('fieldset')
+        .filter(c => Boolean && c.children().length && c.children()[0].tag() === 'label' && c.children()[0].text() === 'What\'s New')
+        .map(c => { 
+            changelogStackView.views.push({ 'class' : 'DepictionSubheaderView', 'title' : 'What\'s New', 'useBoldText' : true, 'useBottomMargin' : false });
+            changelogStackView.views.push(SileoGen.generateSeparator());
+            changelogStackView.views.push(SileoGen.generateMarkdown(cleanHTML(c.children()[1].html()) || 'No reported changes'));
+        });
+    
+    detailsStackView.views.push(SileoGen.generateSeparator());
 
-	let changelogStackView = SileoGen.generateStackView();
-	changelogStackView.tabname = "Changelog"
+    const screenshots = SileoGen.generateScreenshots(160, 160, 8);
+    body.getElementsWithTag('img') // get all images in the body of the page
+        .map(img => screenshots.screenshots.push(SileoGen.generateScreenshot(img.attr('src'), '<3 Khafra')));
+    const bannerURL = screenshots.screenshots[Math.floor(Math.random() * screenshots.screenshots.length)]
 
-	panels.forEach(function(panel){
-		let stackView = detailsStackView;
+    // check if any screenshots are present
+    if(screenshots.screenshots.length) {
+        detailsStackView.views.push(screenshots);
+        detailsStackView.views.push(SileoGen.generateSeparator());
+    }
 
-		let fieldsets = panel.getElementsWithTag("fieldset");
-		fieldsets.forEach(function(fieldset){
-			let tables = fieldset.getElementsWithTag("table");
-			let elements = fieldset.children();
-			elements.forEach(function(el, i) {
-				// Changelogs
-				if(el.tag() === 'label' && el.text() === 'What\'s New') {
-					let list = cleanHTML(elements[i+1].html()).replace(/\n\n/g, '');
+    if(!changelogStackView.views.length) {
+        changelogStackView.views.push({ 'class' : 'DepictionSubheaderView', 'title' : 'No reported changes!', 'useBoldText' : true, 'useBottomMargin' : false });
+    }
 
-					changelogStackView.views.push(SileoGen.generateMarkdown(list));
-				} else if(el.tag() === 'div' && tables.length === 0) {
-					let isLabelForChangeLog = elements[i-1].tag() === 'label' && elements[i-1].text() === 'What\'s New';
-					if(isLabelForChangeLog) {
-						return null;
-					}
-					
-					let autoStackView = SileoGen.generateAutostackView(10);
-					let screenshotsArr = [];
-					let lastSize = {width: NaN, height: NaN, cornerRadius: 0};
+    // get all URLs on the page, determine whether they should be converted to a button or should be displayed in description
+    body.getElementsWithTag('a') 
+        .filter(tag => 
+            tag.parent().parent().parent().attr('id') !== 'description' || 
+            tag.parent().parent().attr('id') !== 'description') ||
+            tag.text() !== 'Developer Packages' // valid URL (on webview), doesn't work in Sileo
+        .map(url => detailsStackView.views.push(SileoGen.generateTableButton(url.text(), url.attr('href'))));
 
-					let images = el.getElementsWithTag("img");
-					images.forEach(function(img){
-						let width = parseFloat(img.attr("width"));
-						let height = parseFloat(img.attr("height"));
-						let src = img.attr("src");
-						let alt = img.attr("alt");
+    detailsStackView.views.push(SileoGen.generateTableButton('View Original Depiction', '.'));
+    detailsStackView.views.push(SileoGen.generateSeparator());
+    detailsStackView.views.push(SileoGen.generateMarkdown('This depiction has been automatically generated. - Khafra'));
+    
 
-						let aspectRatio = height / width;
-						let isScreenshot = false;
-
-						SileoGen.screenshotSizes.forEach(function(size){
-							if (isNaN(height) || isNaN(width)){
-								isScreenshot = true;
-							}
-							let screenshotAspectRatio = size.height / size.width;
-							if (aspectRatio > screenshotAspectRatio - 0.01 && aspectRatio < screenshotAspectRatio + 0.01){
-								isScreenshot = true;
-							}
-						});
-
-						if (isScreenshot){
-							let screenshot = SileoGen.generateScreenshot(src, alt);
-							screenshotsArr.push(screenshot);
-							if (!(isNaN(width) && !isNaN(height))){
-								lastSize.width = width;
-								lastSize.height = height;
-							}
-							if (isNaN(lastSize.width)){
-								lastSize.width = width;
-							}
-							if (isNaN(lastSize.height)){
-								lastSize.height = height;
-							}
-						} else {
-							let image = SileoGen.generateImage(src, width, height);
-							image.preferredWidth = width;
-							autoStackView.views.push(image);
-						}
-					});
-
-					if (autoStackView.views.length > 0) {
-						stackView.views.push(autoStackView);
-					}
-
-					let cleanedHTML = cleanHTML(el.html());
-					let markdown = SileoGen.generateMarkdown(cleanedHTML);
-					markdown.useRawFormat = true;
-					print("HTML: " + cleanedHTML);
-					stackView.views.push(markdown);
-
-					let commonSize = SileoGen.mostCommonSize;
-					if (isNaN(lastSize.width) && !isNaN(lastSize.height)){
-						lastSize.width = lastSize.height * (commonSize.width/commonSize.height);
-					} else if (isNaN(lastSize.height) && !isNaN(lastSize.width)){
-						lastSize.height = lastSize.width * (commonSize.height/commonSize.width);
-					}
-
-					if (screenshotsArr.length > 0){
-						stackView.views.push(SileoGen.generateSeparator());
-						let screenshots = SileoGen.generateScreenshots(lastSize.width, lastSize.height, 8);
-						screenshots.screenshots = screenshotsArr;
-						stackView.views.push(screenshots);
-					}
-				} else if (el.tag() === "div"){
-					let divElements = el.children();
-					divElements.forEach(function(el){
-						let item = parseTag(el);
-						if (item !== null){
-							stackView.views.push(item);
-						}
-					});
-				} else {
-					let item = parseTag(el);
-					if (item !== null){
-						stackView.views.push(item);
-					}
-				}
-			});
-		});
-
-		stackView.views.push(SileoGen.generateSeparator());
-	});
-
-	if(changelogStackView.views.length === 0) {
-		changelogStackView.views.push(SileoGen.generateMarkdown('No changelogs are available for this package!')); 
-	}
-
-	let origButton = SileoGen.generateTableButton("View Original Depiction", ".");
-	detailsStackView.views.push(origButton);
-
-	let disclaimer = SileoGen.generateMarkdown("<span>This depiction has been automatically generated. It may be missing information.</span>");
-	disclaimer.useRawFormat = true;
-	detailsStackView.views.push(disclaimer);
-
-	let rootView = {
+    const rootView = {
 		"class": "DepictionTabView",
-		"minVersion": "0.7",
+        "minVersion": "0.7",
+        "headerImage": absoluteURL(bannerURL && bannerURL.url ? bannerURL.url : ''), // get a random image everytime!
 		"tabs": [ 
             detailsStackView, 
             changelogStackView
@@ -171,4 +77,4 @@ let parseTag = function(el) {
     };
     
 	return JSON.stringify(rootView);
-}());
+}()); // function calls itself
