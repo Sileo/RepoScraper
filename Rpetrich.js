@@ -1,63 +1,74 @@
-(function(){
-	let panels = body.getElementsWithTag("panel");
+/*
+Copyright 2019 Khafra
 
-	let detailsStackView = SileoGen.generateStackView();
-	detailsStackView.tabname = "Details"
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), 
+to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-	let changelogStackView = SileoGen.generateStackView();
-	changelogStackView.tabname = "Changelog"
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-	let holder = [];
-	let cHolder = [];
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
-	panels.forEach(function(panel){
-		let fieldsets = panel.getElementsWithTag("fieldset");
+(function() {
+	const detailsStackView = SileoGen.generateStackView();
+	detailsStackView.tabname = 'Description'
 
-		fieldsets.forEach(function(fieldset, ind){
-			let elements = fieldset.children();
+	const changelogStackView = SileoGen.generateStackView();
+	changelogStackView.tabname = 'Changelog'
 
-			elements.forEach(function(el, i) {
-				if(el.tag() === 'div' && el.children().length && el.children()[0].tag() === 'p') {
-					if(fieldset.attr('style')) {
-						holder.push(el.children()[0].text());
-					} else {
-						cHolder.push(el.text());
-					}
-				} else if(el.tag() === 'a') {
-					let href = el.attr('href'); // thx CS
-					detailsStackView.views.push(SileoGen.generateTableButton(el.text(), absoluteURL(href)))
-				}
-			});
-		});
-	});
+	const screenshots = SileoGen.generateScreenshots(160, 284, 8);
 
-	/*
-	https://stackoverflow.com/a/14438954
-	In newer syntax I would just use [...new Set(arr)], but a filter will work!
-	*/
-	holder.filter(function(value, index, self) { 
-		return self.indexOf(value) === index;
-	}).forEach(function(i) {
-		detailsStackView.views.push(SileoGen.generateMarkdown(i));
-	});
+	// description
+	body.getElementsWithTag('fieldset') // <fieldset id='description'>...</fieldset>
+        .filter(h => Boolean && h.attr('style'))
+		.map(dtxt => dtxt.children().length 
+			? detailsStackView.views.push(SileoGen.generateMarkdown(cleanHTML(dtxt.children()[0].html())))
+			: null
+		);
+	
+	// changelogs
+	body.getElementsWithTag('fieldset') // <fieldset id='description'>...</fieldset>
+        .filter(h => Boolean && !h.attr('style'))
+		.map(dtxt => dtxt.children().map(c => c.tag() !== 'a' ? changelogStackView.views.push(SileoGen.generateMarkdown(cleanHTML(c.html()))) : null));
 
-	cHolder.filter(function(value, index, self) { 
-		return self.indexOf(value) === index;
-	}).forEach(function(i) {
-		changelogStackView.views.push(SileoGen.generateMarkdown(i));
-	});
+	// images
+	body.getElementsWithTag('img')
+		.filter(i => 
+			Boolean && 
+			i.attr('src') && i.parent().tag() !== 'a' &&
+			(i.parent() !== 'div' && i.parent().attr('class') !== 'header')
+		)
+		.map(img => screenshots.screenshots.push(SileoGen.generateScreenshot(img.attr('src'), '<3 Khafra')));
 
-	let disclaimer = SileoGen.generateMarkdown("<span>This depiction has been automatically generated. It may be missing information.</span>");
-	detailsStackView.views.push(disclaimer);
+	const bannerURL = screenshots.screenshots[Math.floor(Math.random() * screenshots.screenshots.length)]
 
-	let rootView = {
-		"class": "DepictionTabView",
-		"minVersion": "0.7",
-		"tabs": [ 
+	if(screenshots.screenshots.length) {
+		detailsStackView.views.push(SileoGen.generateSeparator());
+		detailsStackView.views.push(screenshots);
+	} 
+	
+	detailsStackView.views.push(SileoGen.generateSeparator());
+
+	// links
+	body.getElementsWithTag('a') 
+		.map(url => detailsStackView.views.push(SileoGen.generateTableButton(url.text(), url.attr('href'))));
+		
+	detailsStackView.views.push(SileoGen.generateTableButton('View Original Depiction', '.'));
+	detailsStackView.views.push(SileoGen.generateSeparator());
+	detailsStackView.views.push(SileoGen.generateMarkdown('This depiction has been automatically generated. - Khafra'));
+
+	const rootView = {
+		'class': 'DepictionTabView',
+		'minVersion': '0.7',
+		'headerImage': absoluteURL(bannerURL && bannerURL.url ? bannerURL.url : ''), // get a random image everytime!
+		'tabs': [ 
             detailsStackView, 
             changelogStackView
         ]
     };
     
 	return JSON.stringify(rootView);
-}());
+}()); // function calls itself
