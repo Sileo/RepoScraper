@@ -18,5 +18,14 @@
 			<string>/macciti</string>
 		</dict>
 	</array>
+	<key>rpetrich</key>
+	<array>
+		<dict>
+			<key>host</key>
+			<string>rpetri.ch</string>
+			<key>prefix</key>
+			<string>/cydia</string>
+		</dict>
+	</array>
 </dict>
 </plist>

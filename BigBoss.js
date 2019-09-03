@@ -1,19 +1,4 @@
-/*
- BigBoss HTML Depiction Scraper
- 
- Copyright (c) 2019, CoolStar. All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- 
- 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
- 3. All advertising materials mentioning features or use of this software must display the following acknowledgement:
-    This product includes software developed by the Sileo Team.
- 4. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
- THIS SOFTWARE IS PROVIDED BY COOLSTAR "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-var parseTag = function(el) {
+let parseTag = function(el) {
 	let tag = el.tag();
 	if (tag === "label"){
 		if (el.text().includes("Description")){
@@ -26,15 +11,15 @@ var parseTag = function(el) {
 		let stackView = SileoGen.generateStackView();
 
 		let rows = el.getElementsWithTag("tr");
-		rows.forEach(function(row, idx){
+		rows.forEach(function(row) {
 			let key = row.getElementsWithClassName("key")[0];
 			let detail = row.getElementsWithClassName("detail")[0];
 
-			if (key == null || detail == null){
+			if (key === null || detail === null){
 				return;
 			}
 
-			if (key.tag() != "td" || detail.tag() != "td"){
+			if (key.tag() !== "td" || detail.tag() !== "td"){
 				return;
 			}
 
@@ -42,7 +27,7 @@ var parseTag = function(el) {
 			stackView.views.push(tableCell);
 		});
 		return stackView;
-	} else if (tag == "a" && el.className() == "button"){
+	} else if (tag === "a" && el.className() === "button"){
 		let href = el.attr("href");
 		let button = SileoGen.generateTableButton(el.text(), href);
 		return button;
@@ -50,7 +35,7 @@ var parseTag = function(el) {
 	return null;
 };
 
-var parseMain = function(){
+(function(){
 	let panels = body.getElementsWithTag("panel");
 
 	let detailsStackView = SileoGen.generateStackView();
@@ -59,11 +44,11 @@ var parseMain = function(){
 	let changelogStackView = SileoGen.generateStackView();
 	changelogStackView.tabname = "Changelog"
 
-	panels.forEach(function(panel, idx){
+	panels.forEach(function(panel){
 		let stackView = detailsStackView;
 
 		let fieldsets = panel.getElementsWithTag("fieldset");
-		fieldsets.forEach(function(fieldset, idx){
+		fieldsets.forEach(function(fieldset){
 			let tables = fieldset.getElementsWithTag("table");
 			let elements = fieldset.children();
 			elements.forEach(function(el, i) {
@@ -72,27 +57,27 @@ var parseMain = function(){
 					let list = cleanHTML(elements[i+1].html()).replace(/\n\n/g, '');
 
 					changelogStackView.views.push(SileoGen.generateMarkdown(list));
- 				} else if (el.tag() == "div" && tables.length == 0) {
+				} else if(el.tag() === 'div' && tables.length === 0) {
 					let isLabelForChangeLog = elements[i-1].tag() === 'label' && elements[i-1].text() === 'What\'s New';
 					if(isLabelForChangeLog) {
 						return null;
 					}
 					
 					let autoStackView = SileoGen.generateAutostackView(10);
-					let screenshotsArr = new Array();
+					let screenshotsArr = [];
 					let lastSize = {width: NaN, height: NaN, cornerRadius: 0};
 
 					let images = el.getElementsWithTag("img");
-					images.forEach(function(img, idx){
+					images.forEach(function(img){
 						let width = parseFloat(img.attr("width"));
 						let height = parseFloat(img.attr("height"));
 						let src = img.attr("src");
 						let alt = img.attr("alt");
 
 						let aspectRatio = height / width;
-						var isScreenshot = false;
+						let isScreenshot = false;
 
-						SileoGen.screenshotSizes.forEach(function(size, idx){
+						SileoGen.screenshotSizes.forEach(function(size){
 							if (isNaN(height) || isNaN(width)){
 								isScreenshot = true;
 							}
@@ -129,6 +114,7 @@ var parseMain = function(){
 					let cleanedHTML = cleanHTML(el.html());
 					let markdown = SileoGen.generateMarkdown(cleanedHTML);
 					markdown.useRawFormat = true;
+					print("HTML: " + cleanedHTML);
 					stackView.views.push(markdown);
 
 					let commonSize = SileoGen.mostCommonSize;
@@ -144,17 +130,17 @@ var parseMain = function(){
 						screenshots.screenshots = screenshotsArr;
 						stackView.views.push(screenshots);
 					}
-				} else if (el.tag() == "div"){
+				} else if (el.tag() === "div"){
 					let divElements = el.children();
-					divElements.forEach(function(el, idx){
+					divElements.forEach(function(el){
 						let item = parseTag(el);
-						if (item != null){
+						if (item !== null){
 							stackView.views.push(item);
 						}
 					});
 				} else {
 					let item = parseTag(el);
-					if (item != null){
+					if (item !== null){
 						stackView.views.push(item);
 					}
 				}
@@ -185,5 +171,4 @@ var parseMain = function(){
     };
     
 	return JSON.stringify(rootView);
-}
-parseMain();
+}());
