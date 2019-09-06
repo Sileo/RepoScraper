@@ -13,9 +13,9 @@
  THIS SOFTWARE IS PROVIDED BY COOLSTAR "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-let SileoGen = {};
+var SileoGen = new Object();
 
-SileoGen.version = "1.0.1";
+SileoGen.version = "1.0";
 
 SileoGen.screenshotSizes = [
 	{width: 320, height: 480, cornerRadius: 16}, //iPhone 4/4S
@@ -63,7 +63,7 @@ SileoGen.generateSeparator = function(){
 };
 
 SileoGen.trimSeparator = function(array){
-	if (array[array.length - 1].class === "DepictionSeparatorView"){
+	if (array[array.length - 1].class == "DepictionSeparatorView"){
 		array.pop();
 	}
 };
@@ -87,7 +87,7 @@ SileoGen.generateTableButton = function(title, action){
 SileoGen.generateStackView = function(){
 	return {
 		"class": "DepictionStackView",
-		"views": []
+		"views": Array()
 	};
 };
 
@@ -95,7 +95,7 @@ SileoGen.generateAutostackView = function(horizontalSpacing){
 	return {
 		"class": "DepictionAutoStackView",
 		"horizontalSpacing": horizontalSpacing,
-		"views": []
+		"views": Array()
 	};
 }
 
@@ -128,6 +128,6 @@ SileoGen.generateScreenshots = function(width, height, cornerRadius){
 		"class": "DepictionScreenshotsView",
 		"itemCornerRadius": cornerRadius,
 		"itemSize": "{" + width + ", " + height + "}",
-		"screenshots": []
+		"screenshots": Array()
 	};
 };
