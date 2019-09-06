@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -10,38 +9,32 @@
 			<string>moreinfo.thebigboss.org</string>
 		</dict>
 	</array>
-	<key>rpetrich</key>
+	<key>MacCiti</key>
 	<array>
 		<dict>
 			<key>host</key>
-			<string>rpetri.ch</string>
+			<string>cydia.saurik.com</string>
 			<key>prefix</key>
-			<string>/cydia</string>
+			<string>/macciti</string>
+		</dict>
+	</array>
+	<key>incendows</key>
+	<array>
+		<dict>
+			<key>host</key>
+			<string>incendo.ws</string>
+			<key>prefix</key>
+			<string>/repo</string>
+		</dict>
+	</array>
+	<key>incendows2</key>
+	<array>
+		<dict>
+			<key>host</key>
+			<string>repo.incendo.ws</string>
+			<key>prefix</key>
+			<string>/depictions</string>
 		</dict>
 	</array>
 </dict>
 </plist>
-=======
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>BigBoss</key>
-	<array>
-		<dict>
-			<key>host</key>
-			<string>moreinfo.thebigboss.org</string>
-		</dict>
-	</array>
-	<key>rpetrich</key>
-	<array>
-		<dict>
-			<key>host</key>
-			<string>rpetri.ch</string>
-			<key>prefix</key>
-			<string>/cydia</string>
-		</dict>
-	</array>
-</dict>
-</plist>
->>>>>>> b64aa27b20ca4f7592b1567dab003216626c49db
