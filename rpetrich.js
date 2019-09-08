@@ -13,62 +13,67 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 */
 
 (function() {
-	const detailsStackView = SileoGen.generateStackView();
-	detailsStackView.tabname = 'Description'
+	const detailsStackView = { 'class': 'DepictionStackView', 'views': [], 'tabname': 'Description' }
+	const changelogStackView = { 'class': 'DepictionStackView', 'views': [], 'tabname': 'Changelog' }
 
-	const changelogStackView = SileoGen.generateStackView();
-	changelogStackView.tabname = 'Changelog'
-
-	const screenshots = SileoGen.generateScreenshots(160, 284, 8);
+	const screenshots = { "class": "DepictionScreenshotsView", "itemCornerRadius": 8, "itemSize": '{160, 284}', "screenshots": [] }
 
 	// description
 	body.getElementsWithTag('fieldset') // <fieldset id='description'>...</fieldset>
-        .filter(h => Boolean && h.attr('style'))
-		.map(dtxt => dtxt.children().length 
-			? detailsStackView.views.push(SileoGen.generateMarkdown(cleanHTML(dtxt.children()[0].html())))
-			: null
-		);
+        .filter(h => h.attr('style') && h.children().length)
+		.map(dtxt => {
+			detailsStackView.views.push({ "class": "DepictionMarkdownView", "markdown": cleanHTML(dtxt.children()[0].html()), 'useRawFormat': true });
+			detailsStackView.views.push({ "class": "DepictionSeparatorView" });
+		});
 	
 	// changelogs
 	body.getElementsWithTag('fieldset') // <fieldset id='description'>...</fieldset>
-        .filter(h => Boolean && !h.attr('style'))
-		.map(dtxt => dtxt.children().map(c => c.tag() !== 'a' ? changelogStackView.views.push(SileoGen.generateMarkdown(cleanHTML(c.html()))) : null));
+		.filter(f => !f.attr('style') && f.children()[0].tag() === 'div' && f.children()[0].children().length)
+		.map(_ => {
+			changelogStackView.views.push({ "class": "DepictionMarkdownView", "markdown": _.html(), 'useRawFormat': true });
+			changelogStackView.views.push({ "class": "DepictionSeparatorView" });
+		});
+
+	if(changelogStackView.views.length === 0) {
+		changelogStackView.views.push({ 'class': 'DepictionHeaderView', 'title': '0.0' });
+		changelogStackView.views.push({ "class": "DepictionMarkdownView", "markdown": 'No reported changes!' });
+	}
 
 	// images
 	body.getElementsWithTag('img')
 		.filter(i => 
-			Boolean && 
 			i.attr('src') && i.parent().tag() !== 'a' &&
-			(i.parent() !== 'div' && i.parent().attr('class') !== 'header')
+			(i.parent() !== 'div' && i.parent().className() !== 'header')
 		)
-		.map(img => screenshots.screenshots.push(SileoGen.generateScreenshot(img.attr('src'), '<3 Khafra')));
-
-	const bannerURL = screenshots.screenshots[Math.floor(Math.random() * screenshots.screenshots.length)]
+		.map(img => screenshots.screenshots.push({ "url": absoluteURL(img.attr('src')), "accessibilityText": '<3 Khafra' }));
 
 	if(screenshots.screenshots.length) {
-		detailsStackView.views.push(SileoGen.generateSeparator());
+		detailsStackView.views.push({ "class": "DepictionSeparatorView" });
 		detailsStackView.views.push(screenshots);
+		detailsStackView.views.push({ "class": "DepictionSeparatorView" });
 	} 
-	
-	detailsStackView.views.push(SileoGen.generateSeparator());
 
 	// links
 	body.getElementsWithTag('a') 
-		.map(url => detailsStackView.views.push(SileoGen.generateTableButton(url.text(), url.attr('href'))));
+		.map(url => detailsStackView.views.push({ "class": "DepictionTableButtonView", "title": url.text(), "action": absoluteURL(url.attr('href')) }));
 		
-	detailsStackView.views.push(SileoGen.generateTableButton('View Original Depiction', '.'));
-	detailsStackView.views.push(SileoGen.generateSeparator());
-	detailsStackView.views.push(SileoGen.generateMarkdown('This depiction has been automatically generated. - Khafra'));
+	detailsStackView.views.push({ "class": "DepictionTableButtonView", "title": 'View Original Depiction', "action": absoluteURL('.') });
+	detailsStackView.views.push({ "class": "DepictionSeparatorView" });
+	detailsStackView.views.push({ "class": "DepictionMarkdownView", "markdown": 'This depiction has been automatically generated. - Khafra' });
 
 	const rootView = {
 		'class': 'DepictionTabView',
 		'minVersion': '0.7',
-		'headerImage': absoluteURL(bannerURL && bannerURL.url ? bannerURL.url : ''), // get a random image everytime!
+		'tintColor': '#006400',
 		'tabs': [ 
             detailsStackView, 
             changelogStackView
         ]
     };
-    
+	
+	if(screenshots.screenshots.length) {
+		rootView['headerImage'] = absoluteURL(screenshots.screenshots[Math.floor(Math.random() * screenshots.screenshots.length)].url);
+	}
+
 	return JSON.stringify(rootView);
 }()); // function calls itself
