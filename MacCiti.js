@@ -1,134 +1,72 @@
 /*
- MacCiti HTML Depiction Scraper
- 
- Copyright (c) 2019, CoolStar. All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- 
- 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
- 3. All advertising materials mentioning features or use of this software must display the following acknowledgement:
-    This product includes software developed by the Sileo Team.
- 4. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
- THIS SOFTWARE IS PROVIDED BY COOLSTAR "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+Copyright 2019 Khafra
 
-let bannerURL = '';
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), 
+to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-let parseTag = function(el, changelogStackView) {
-	let tag = el.tag();
-	if (tag === "label"){
-		if (el.text().includes("Description")){
-			return null;
-		}
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-		let labelText = SileoGen.generateHeader(el.text());
-		return labelText;
-	} else if (tag === "a" && el.attr("target") === "_new"){
-		let href = el.attr("href");
-		if (el.text().includes("Screenshots")){
-			downloadPage(absoluteURL(href), "screenshotsHead", "screenshotsBody");
-			return parseScreenshots();
-		} else if (el.text().includes("Changes")){
-			downloadPage(absoluteURL(href), "changesHead", "changesBody");
-			parseChangelogs(changelogStackView);
-			return null;
-		}
-		let button = SileoGen.generateTableButton(el.text(), href);
-		return button;
-	} else if (tag === "img"){
-		let src = el.attr("src");
-		if (bannerURL === "") {
-			bannerURL = absoluteURL(src);
-			return null;
-		}
-		let image = SileoGen.generateImage(src, 738, 0);
-		return image;
-	}
-	return null;
-};
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
-let parseScreenshots = function(){
-	let screenshots = SileoGen.generateScreenshots(160, 284, 8);
+(function() {
+    const descriptionStackView = { 'class': 'DepictionStackView', 'views': [], 'tabname': 'Description' };
+    const changelogStackView = { 'class': 'DepictionStackView', 'views': [], 'tabname': 'Changes' };
+    const rootView = { 'class': 'DepictionTabView', 'minVersion': '0.7', 'tabs': [ descriptionStackView, changelogStackView ] };
+    const images = { 'class': 'DepictionScreenshotsView', 'screenshots': [], 'itemCornerRadius': 8, 'itemSize': '{160, 284}' };
 
-	let imgs = screenshotsBody.getElementsWithTag("img");
-	imgs.forEach(function(img){
-		let src = img.attr("src");
+    // description
+    body.getElementsWithTag('div')
+        .filter(div => div.parent().tag() === 'fieldset')[0]
+        .children()
+        .map(p => descriptionStackView.views.push({ 'class': 'DepictionMarkdownView', 'markdown': p.html() }))
+        
+    // images
+    body.getElementsWithTag('img')
+        .filter(i_uf => i_uf.className() !== 'icon') // so logos, etc. get filtered
+        .map(i_f => images.screenshots.push({ 'url': absoluteURL(i_f.attr('src')), 'accessibilityText': '<3 Khafra' }))
 
-		let screenshot = SileoGen.generateScreenshot(src, "Screenshot");
-		screenshots.screenshots.push(screenshot);
-	});
+    const SCURL = body.getElementsWithTag('a').filter(a => a.text().includes('Screenshots'));
 
-	return screenshots;
-};
+    if(SCURL && SCURL.length) {
+        downloadPage(absoluteURL(SCURL[0].attr('href')), 'SCHead', 'SCBody'); // download page html, get images
+        SCBody.getElementsWithTag('img')
+            .map(img => images.screenshots.push({ 'url': absoluteURL(img.attr('src')), 'accessibilityText': '<3 Khafra' }))
+    }
 
-let parseChangelogs = function(changelogStackView){
-	let changes = changesBody.getElementsWithTag("div");
-	changes.forEach(function(change){
-		let label = change.getElementsWithTag("label")[0];
-		if (label !== null){
-			let title = "Version " + label.text().replace(":","");
-			let cleanedHTML = cleanHTML(change.html()).substr(label.text().length + 1);
+    if(images.screenshots.length) {
+        descriptionStackView.views.push({ 'class': 'DepictionSeparatorView' });
+        descriptionStackView.views.push(images);
+        descriptionStackView.views.push({ 'class': 'DepictionSeparatorView' });
+        rootView['headerImage'] = images.screenshots[Math.floor(Math.random() * images.screenshots.length)].url
+    }
 
-			let subHeaderView = SileoGen.generateSubheader(title);
-			subHeaderView.useBoldText = true;
-			subHeaderView.useBottomMargin = false;
-			changelogStackView.views.push(subHeaderView);
+    // changelog
+    const CLURL = body.getElementsWithTag('a').filter(a => a.text().includes('Recent Changes'));
 
-			let markdownView = SileoGen.generateMarkdown(cleanedHTML);
-			markdownView.useSpacing = true;
-			changelogStackView.views.push(markdownView);
-		}
-	});
-};
+    if(CLURL && CLURL.length) {
+        downloadPage(absoluteURL(CLURL[0].attr('href')), 'CLHead', 'CLBody');
+        CLBody.getElementsWithTag('div')
+            .map(d => {
+                const [version, ...desc] = d.text().split(':');
+                changelogStackView.views.push({ 'class': 'DepictionHeaderView', 'title': version, 'useBoldText': true  });
+                changelogStackView.views.push({ 'class': 'DepictionSeparatorView' });
+                changelogStackView.views.push({ 'class': 'DepictionMarkdownView', 'markdown': desc.join() });
+            });
+    }
 
-(function(){
-	let panels = body.getElementsWithTag("panel");
+    // href
+    body.getElementsWithTag('a')
+        .filter(a => a.parent().tag() !== 'p' && !a.text().match(/Recent Changes|Screenshots/g))
+        .map(u => descriptionStackView.views.push({ 'class': 'DepictionTableButtonView', 'title': u.text(), 'action': absoluteURL(u.attr('href')) }));
 
-	let detailsStackView = SileoGen.generateStackView();
-	detailsStackView.tabname = "Details"
+    // footer + static stuff
+    descriptionStackView.views.push({ 'class': 'DepictionTableButtonView', 'title': 'View Original Depiction', 'action': absoluteURL('.') });
+    descriptionStackView.views.push({ 'class': 'DepictionSeparatorView' });
+    descriptionStackView.views.push({ 'class': 'DepictionMarkdownView', 'markdown': 'This depiction has been automatically generated. - Khafra (MacCiti)' });
 
-	let changelogStackView = SileoGen.generateStackView();
-	changelogStackView.tabname = "Changelog"
-
-	panels.forEach(function(panel){
-		let stackView = detailsStackView;
-
-		let fieldsets = panel.getElementsWithTag("fieldset");
-		fieldsets.forEach(function(fieldset){
-			let elements = fieldset.children();
-			elements.forEach(function(el){
-				if (el.tag() === "div" ) {
-					let cleanedHTML = cleanHTML(el.html());
-					let markdown = SileoGen.generateMarkdown(cleanedHTML);
-					markdown.useRawFormat = true;
-					stackView.views.push(markdown);
-				} else {
-					let item = parseTag(el, changelogStackView);
-					if (item !== null){
-						stackView.views.push(item);
-					}
-				}
-			});
-		});
-
-		stackView.views.push(SileoGen.generateSeparator());
-	});
-
-	let origButton = SileoGen.generateTableButton("Original Depiction", ".");
-	detailsStackView.views.push(origButton);
-
-	let disclaimer = SileoGen.generateMarkdown("<span style='font-size: 12pt;color: #666666;text-align: center;'>This depiction has been automatically generated. It may be missing information.</span>");
-	disclaimer.useRawFormat = true;
-	detailsStackView.views.push(disclaimer);
-	
-	changelogStackView.views.push(SileoGen.generateMarkdown("Changelogs are not available for this package."));
-
-	let rootView = {
-		"class": "DepictionTabView",
-		"minVersion": "0.7",
-		"headerImage": bannerURL,
-		"tabs": [detailsStackView, changelogStackView]
-	};
-	return JSON.stringify(rootView);
+    return JSON.stringify(rootView);
 }());
