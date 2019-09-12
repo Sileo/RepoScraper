@@ -24,11 +24,12 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
         .children()
         .map(p => descriptionStackView.views.push({ 'class': 'DepictionMarkdownView', 'markdown': p.html() }))
         
-    // images
-    body.getElementsWithTag('img')
+    // banner
+    const banner = body.getElementsWithTag('img')
         .filter(i_uf => i_uf.className() !== 'icon') // so logos, etc. get filtered
-        .map(i_f => images.screenshots.push({ 'url': absoluteURL(i_f.attr('src')), 'accessibilityText': '<3 Khafra' }))
+        .map(i_f => absoluteURL(i_f.attr('src')));
 
+    // images
     const SCURL = body.getElementsWithTag('a').filter(a => a.text().includes('Screenshots'));
 
     if(SCURL && SCURL.length) {
@@ -41,7 +42,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
         descriptionStackView.views.push({ 'class': 'DepictionSeparatorView' });
         descriptionStackView.views.push(images);
         descriptionStackView.views.push({ 'class': 'DepictionSeparatorView' });
-        rootView['headerImage'] = images.screenshots[Math.floor(Math.random() * images.screenshots.length)].url
+        rootView['headerImage'] = banner.length ? banner[0] : images.screenshots[Math.floor(Math.random() * images.screenshots.length)].url
     }
 
     // changelog
