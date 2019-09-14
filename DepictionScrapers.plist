@@ -45,5 +45,12 @@
 			<string>/cydia</string>
 		</dict>
 	</array>
+	<key>angelxwind</key>
+	<array>
+		<dict>
+			<key>host</key>
+			<string>cydia.akemi.ai</string>
+		</dict>
+	</array>
 </dict>
 </plist>
