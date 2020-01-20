@@ -102,7 +102,8 @@ SileoGen.generateAutostackView = function(horizontalSpacing){
 SileoGen.generateMarkdown = function(html){
 	return {
 		"class": "DepictionMarkdownView",
-		"markdown": html
+		"markdown": html,
+		"useRawFormat": true
 	};
 };
 
