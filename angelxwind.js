@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Khafra
+Copyright (c) 2020, TylerD3V. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), 
 to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -15,59 +15,59 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 (function() {
 	const detailsStackView = SileoGen.generateStackView();
 	detailsStackView.tabname = 'Description'
-
 	const changelogStackView = SileoGen.generateStackView();
 	changelogStackView.tabname = 'Changelog'
-
-	// description
+    
+    // description
 	body.getElementsWithTag('p')
-		.filter(p => !p.attr('role') && p.parent().parent().parent().tag() === 'section')
-		.map(d => detailsStackView.views.push(SileoGen.generateMarkdown(d.html())))
-		
-	if(detailsStackView.views.length)
-		detailsStackView.views.push(SileoGen.generateSeparator());
+		.filter(h => h.parent().tag() === 'block')
+		.map(dtxt => dtxt.html().replace(/\s+/g).length
+			? detailsStackView.views.push(SileoGen.generateMarkdown(cleanHTML(dtxt.html().trim())))
+			: null
+		);
 
-	// href
-	body.getElementsWithTag('a')
-		.filter(a => a.attr('role') === 'button')
-		.map(b => detailsStackView.views.push(SileoGen.generateTableButton(b.text(), b.attr('href'))))
-	
-	if(detailsStackView.views.length)
-		detailsStackView.views.push(SileoGen.generateSeparator());
-
-	// changelog
-	const changelogURL = body.getElementsWithTag('a')
+    // changes
+    const changelogURL = body.getElementsWithTag('a')
 		.filter(a => a.text().includes('Changelog'))[0];
-
+    
 	if(changelogURL && changelogURL.attr('href')) {
 		downloadPage(absoluteURL(changelogURL.attr('href')), 'CLHead', 'CLBody');
 
-		CLBody.getElementsWithTag('section')[0]
+        CLBody.getElementsWithTag('panel')[1]
 			.children()
 			.map(c => {
-				if(c.tag() === 'h2') {
-					changelogStackView.views.push({ 'class': 'DepictionHeaderView', 'title': c.text() });
+				if(c.tag() === 'label') {
+					changelogStackView.views.push({ 'class': 'DepictionLabelView', 'text': c.text() });
 				} else {
-					c.children().filter(c => c.tag() === 'li').map(p => changelogStackView.views.push(SileoGen.generateMarkdown('• ' + p.children()[0].html())))
+					c.children().filter(c => c.tag() === 'div').map(p => changelogStackView.views.push(SileoGen.generateMarkdown('• ' + p.children()[0].html())))
 					changelogStackView.views.push(SileoGen.generateSeparator());
 				}
 			});
 	} else {
 		changelogStackView.views.push({ 'class': 'DepictionHeaderView', 'title': '0.0' });
 		changelogStackView.views.push(SileoGen.generateMarkdown('No reported changes!'));
-	}
+    }
 
-	// footer
-	detailsStackView.views.push(SileoGen.generateMarkdown('This depiction has been automatically generated.'));
+    // links
+    detailsStackView.views.push(SileoGen.generateSeparator());
+    body.getElementsWithTag('label')
+    .filter(a => a.parent().parent().tag() === 'a' && !a.text().includes('Karen\'s Repo') && !a.text().includes('View in Cydia') && !a.text().includes('Changelog'))
+    .map(b => detailsStackView.views.push(SileoGen.generateTableButton(b.text(), b.attr('href'))))
+    detailsStackView.views.push({ 'class': 'DepictionTableButtonView', 'title': 'View Original Depiction', 'action': absoluteURL('.') });
+    detailsStackView.views.push(SileoGen.generateSeparator());
+    detailsStackView.views.push(SileoGen.generateMarkdown('This depiction has been automatically generated.'));
 
-	const rootView = {
-		'class': 'DepictionTabView',
-		'minVersion': '0.7',
-		'tabs': [ 
-            detailsStackView, 
+    const rootView = {
+
+        'class': 'DepictionTabView',
+        'minVersion': '0.7',
+        'tintColor': '#006565',
+        'tabs': [
+
+            detailsStackView,
             changelogStackView
         ]
-    };
-    
-	return JSON.stringify(rootView);
-}()); // function calls itself
+	};
+	
+    return JSON.stringify(rootView);
+}());
