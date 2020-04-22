@@ -5,4 +5,4 @@ Assets for Sileo's built-in repo scraper
   * [MacCiti](http://cydia.saurik.com/macciti/)
   * [Matchstic](https://repo.incendo.ws)
   * [Rpetrich](https://rpetri.ch/cydia)
-  
+  * [Angelxwind](https://cydia.akemi.ai)
