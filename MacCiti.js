@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Khafra
+Copyright (c) 2019, Sileo Team. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), 
 to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -35,7 +35,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
     if(SCURL && SCURL.length) {
         downloadPage(absoluteURL(SCURL[0].attr('href')), 'SCHead', 'SCBody'); // download page html, get images
         SCBody.getElementsWithTag('img')
-            .map(img => images.screenshots.push({ 'url': absoluteURL(img.attr('src')), 'accessibilityText': '<3 Khafra' }))
+            .map(img => images.screenshots.push({ 'url': absoluteURL(img.attr('src')), 'accessibilityText': '' }))
     }
 
     if(images.screenshots.length) {
@@ -67,7 +67,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
     // footer + static stuff
     descriptionStackView.views.push({ 'class': 'DepictionTableButtonView', 'title': 'View Original Depiction', 'action': absoluteURL('.') });
     descriptionStackView.views.push({ 'class': 'DepictionSeparatorView' });
-    descriptionStackView.views.push({ 'class': 'DepictionMarkdownView', 'markdown': 'This depiction has been automatically generated. - Khafra (MacCiti)' });
+    descriptionStackView.views.push({ 'class': 'DepictionMarkdownView', 'markdown': 'This depiction has been automatically generated.' });
 
     return JSON.stringify(rootView);
 }());

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Khafra
+Copyright (c) 2019, Sileo Team. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), 
 to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -45,7 +45,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 			i.attr('src') && i.parent().tag() !== 'a' &&
 			(i.parent() !== 'div' && i.parent().className() !== 'header')
 		)
-		.map(img => screenshots.screenshots.push({ "url": absoluteURL(img.attr('src')), "accessibilityText": '<3 Khafra' }));
+		.map(img => screenshots.screenshots.push({ "url": absoluteURL(img.attr('src')), "accessibilityText": '' }));
 
 	if(screenshots.screenshots.length) {
 		detailsStackView.views.push({ "class": "DepictionSeparatorView" });
@@ -59,7 +59,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 		
 	detailsStackView.views.push({ "class": "DepictionTableButtonView", "title": 'View Original Depiction', "action": absoluteURL('.') });
 	detailsStackView.views.push({ "class": "DepictionSeparatorView" });
-	detailsStackView.views.push({ "class": "DepictionMarkdownView", "markdown": 'This depiction has been automatically generated. - Khafra' });
+	detailsStackView.views.push({ "class": "DepictionMarkdownView", "markdown": 'This depiction has been automatically generated.' });
 
 	const rootView = {
 		'class': 'DepictionTabView',

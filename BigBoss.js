@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Khafra
+Copyright (c) 2019, Sileo Team. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), 
 to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -40,7 +40,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 
     const screenshots = SileoGen.generateScreenshots(160, 160, 8);
     body.getElementsWithTag('img') // get all images in the body of the page
-        .map(img => screenshots.screenshots.push(SileoGen.generateScreenshot(img.attr('src'), '<3 Khafra')));
+        .map(img => screenshots.screenshots.push(SileoGen.generateScreenshot(img.attr('src'), '')));
     const bannerURL = screenshots.screenshots[Math.floor(Math.random() * screenshots.screenshots.length)]
 
     // information (price, updated)
@@ -73,7 +73,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 
     detailsStackView.views.push(SileoGen.generateTableButton('View Original Depiction', '.'));
     detailsStackView.views.push(SileoGen.generateSeparator());
-    detailsStackView.views.push(SileoGen.generateMarkdown('This depiction has been automatically generated. - Khafra'));
+    detailsStackView.views.push(SileoGen.generateMarkdown('This depiction has been automatically generated.'));
     
     const rootView = {
 		'class': 'DepictionTabView',
